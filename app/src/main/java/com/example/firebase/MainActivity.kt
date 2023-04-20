@@ -3,8 +3,14 @@ package com.example.firebase
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.ViewCompat.setAccessibilityDelegate
+import java.security.AccessController.getContext
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,9 +38,40 @@ class MainActivity : AppCompatActivity() {
         val nTitle= sp.getString("title", "")
         val nBody = sp.getString("body", "")
         val nData= sp.getString("data","")
-        title.setText(nTitle)
-        body.setText(nBody)
-        data.setText(nData)
+        title.text = nTitle
+        body.text = nBody
+        data.text = nData
+
+        val access = findViewById<View>(R.id.view)
+
+        access.accessibilityDelegate = object : View.AccessibilityDelegate() {
+            override fun onInitializeAccessibilityNodeInfo(
+                host: View,
+                info: AccessibilityNodeInfo
+            ) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.isClickable=true
+                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_COPY)
+                Log.d("actionCopied","Success")
+
+            }
+            override fun performAccessibilityAction(
+                host: View,
+                action: Int,
+                args: Bundle?
+            ): Boolean {
+                if (action == AccessibilityNodeInfo.ACTION_CLICK) {
+                    // Perform your custom action here
+                    Toast.makeText(this@MainActivity, "View clicked!", Toast.LENGTH_SHORT).show()
+                    return true
+                }
+                Log.d("action","action done")
+
+                return super.performAccessibilityAction(host, action, args)
+            }
+
+
+        }
 
     }
 }
