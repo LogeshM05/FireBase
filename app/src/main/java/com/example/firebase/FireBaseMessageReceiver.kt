@@ -1,5 +1,6 @@
 package com.example.firebase
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -13,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import io.mob.resu.reandroidsdk.ReAndroidSDK
 
 
 const val channelId= "notification_channel"
@@ -24,6 +26,10 @@ class FireBaseMessageReceiver : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.i("token", "Refreshed token :: $token")
+
+//        myEdit.putString("fcmToken",token)
+//        myEdit.apply()
+
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
@@ -31,48 +37,30 @@ class FireBaseMessageReceiver : FirebaseMessagingService() {
         Log.d("Tag1", "${remoteMessage.notification?.body}")
         Log.d("Tag1", "${remoteMessage.data}")
 
-
-        val sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE)
-        val myEdit = sharedPreferences.edit()
-        myEdit.putString("title", remoteMessage.notification!!.title.toString())
-        myEdit.putString("body", remoteMessage.notification!!.body.toString())
-        myEdit.putString("data", remoteMessage.data.toString())
-        myEdit.apply()
-
-        if (remoteMessage.getNotification() != null) {
+        if (remoteMessage.notification != null) {
             showNotification(remoteMessage.notification!!.title!!, remoteMessage.notification!!.body!!)
-
         }
+        if(ReAndroidSDK.getInstance(this).onReceivedCampaign(remoteMessage.data))
+            return
 
     }
 
-    fun getRemoteView(title: String, message: String): RemoteViews {
-        val remoteView = RemoteViews(
-            "com.example.firebase", R.layout.notification
-        )
-
-        remoteView.setTextViewText(R.id.title, title)
-        remoteView.setTextViewText(R.id.message, message)
-        remoteView.setImageViewResource(R.id.app_logo, R.drawable.gpaylogo)
-        return remoteView
-    }
-
-
-    fun showNotification(title: String, message: String) {
-        val intent = Intent(this, MainActivity::class.java)
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private fun showNotification(title: String, body: String) {
+        val intent = Intent(this,SecondActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
         var builder: NotificationCompat.Builder = NotificationCompat.Builder(
             applicationContext,
             channelId
         )
-            .setSmallIcon(R.drawable.gpaylogo)
+            .setSmallIcon(R.drawable.notification_icon)
             .setAutoCancel(true)
             .setVibrate(longArrayOf(1000, 1000, 1000, 1000))
             .setOnlyAlertOnce(true)
             .setContentIntent(pendingIntent)
 
-        builder = builder.setContent(getRemoteView(title, message))
+        builder = builder.setContent(getRemoteView(title, body))
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -83,6 +71,16 @@ class FireBaseMessageReceiver : FirebaseMessagingService() {
             notificationManager.createNotificationChannel(notificationChannel)
         }
         notificationManager.notify(0, builder.build())
+    }
+    private fun getRemoteView(title: String, body: String): RemoteViews {
+        val remoteView = RemoteViews(
+            "com.example.visioninsurance", R.layout.notification
+        )
+
+        remoteView.setTextViewText(R.id.title, title)
+        remoteView.setTextViewText(R.id.message, body)
+        remoteView.setImageViewResource(R.id.app_logo, R.drawable.gpaylogo)
+        return remoteView
     }
 }
 

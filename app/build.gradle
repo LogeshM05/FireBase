@@ -42,6 +42,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx:23.1.1'
     implementation 'androidx.test:core-ktx:1.5.0'
     testImplementation 'junit:junit:4.13.2'
+    implementation 'io.resu:ReAndroidSDK_22f5edd7_e3e7_4c50_868d_4b28f4e83f4d:-SNAPSHOT'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 }
